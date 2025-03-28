@@ -8,6 +8,8 @@ function Home() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [partialMatch, setPartialMatch] = useState<boolean>(true);
+    const [limit, setLimit] = useState<number>(25);
+    const limitOptions: number[] = [5, 10, 25, 50];
 
     const handleSearch = async () => {
 
@@ -39,6 +41,17 @@ function Home() {
                         placeholder="Search..."
                         className="search-input"
                     />
+                    <select 
+                        value={limit} 
+                        onChange={(e) => setLimit(Number(e.target.value))}
+                        className="limit-select"
+                    >
+                        {limitOptions.map(value => (
+                            <option key={value} value={value}>
+                                {value} results
+                            </option>
+                        ))}
+                    </select>
                     <label className="partial-match-label">
                         <input
                             type="checkbox"

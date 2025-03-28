@@ -31,8 +31,9 @@ async function searchAPI(params: SearchParams): Promise<SearchResponse> {
 
     // Search for exact matches if partialMatch is false
     const response = await axios.get<SearchResponse>(
-        `${API_BASE_URL}:"${params.query}"`, {
+        `${API_BASE_URL}${!params.partialMatch ? ".exact" : ""}:"${encodeURIComponent(params.query)}"`, {
       params: {
+        sort: 'product_ndc:asc',
         limit: params.limit || 10,
       },
       timeout: 5000, // 5 second timeout
