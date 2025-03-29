@@ -1,7 +1,7 @@
 import { useState } from "react";
-import searchAPI, { SearchResult } from "../services/apiSearch";
+import searchAPI, { SearchResult, SearchParams } from "../services/apiSearch";
 import SearchResults from "../features/SearchResults";
-import LoadingSpinner from "../ui/LoadingSpinner";
+
 function Home() {
 
     const [search, setSearch] = useState<string>("");
@@ -9,9 +9,12 @@ function Home() {
     const [error, setError] = useState<string | null>(null);
     const [partialMatch, setPartialMatch] = useState<boolean>(true);
     const [limit, setLimit] = useState<number>(25);
-    const limitOptions: number[] = [5, 10, 25, 50];
     const [results, setResults] = useState<SearchResult[]>([]);
     const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
+
+    // Options for the number of results to display
+    // This could be fetched from an API or defined in a config file
+    const limitOptions: number[] = [5, 10, 25, 50];
 
     const handleSearch = async () => {
 
@@ -23,8 +26,20 @@ function Home() {
         setResults([]);
         setSearchPerformed(false);
 
+        // Create the search parameters
+        const searchParams : SearchParams = {
+            query: search,
+            partialMatch,
+            searchField: "brand_name",
+            limit
+        }
+
         try {
-            const results = await searchAPI({ query: search, partialMatch: partialMatch, searchField: "brand_name" });
+
+            // Search for the results - Pass in the search parameters
+            const results = await searchAPI(searchParams);
+
+            
             setResults(results.results);
             setSearchPerformed(true);
         } catch (error) {
@@ -71,9 +86,7 @@ function Home() {
                 </div>
             </div>
 
-            {isLoading && <LoadingSpinner />}
-
-            {results.length > 0 && (
+            {searchPerformed && results.length > 0 && (
                 <SearchResults
                     results={results}
                     isLoading={isLoading}

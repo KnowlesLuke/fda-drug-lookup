@@ -1,5 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import { API_CONFIG } from '../config/api';
 
+/**
+ * Search result interface
+ */
 export interface SearchResult {
   id: string;
   brand_name: string;
@@ -8,20 +12,23 @@ export interface SearchResult {
   product_number: string;
 }
 
+/**
+ * Search response interface
+ */
 interface SearchResponse {
   results: SearchResult[];
   total: number;
 }
 
+/**
+ * Search parameters interface
+ */
 export interface SearchParams {
   query: string;
   partialMatch: boolean;
-  limit?: number;
+  limit: number;
   searchField: string;
 }
-
-// Base API URL - should be moved to environment variables in production
-const API_BASE_URL = 'https://api.fda.gov/drug/ndc.json?search=';
 
 /**
  * Performs a search query against the API
@@ -35,30 +42,33 @@ async function searchAPI(params: SearchParams): Promise<SearchResponse> {
     const { query, partialMatch, limit, searchField } = params;
 
     // Search for exact matches if partialMatch is false
-    const exactMatch = partialMatch ? "" : ".exact";
+    const exactMatch : string = partialMatch ? "" : ".exact";
 
+    const baseUrl = new URL(API_CONFIG.BASE_URL);
+    const searchQuery : string = `${searchField}${exactMatch}:"${encodeURIComponent(query)}"`;
+
+    // Add the additional params
+    baseUrl.searchParams.set('search', searchQuery);
+    baseUrl.searchParams.set('limit', limit.toString());
+    baseUrl.searchParams.set('sort', 'product_ndc:asc');
+    
     // Build the API URL with the search field and exact match
-    const url = `${API_BASE_URL}${searchField}${exactMatch}:"${encodeURIComponent(query)}"`;
+    const url : string = baseUrl.toString();
 
-    const response = await axios.get<SearchResponse>(
-      url, {
-        params: {
-          sort: 'product_ndc:asc',
-          limit: limit || 10,
-        },
-        timeout: 5000, // 5 second timeout
-    });
+    const response : AxiosResponse<SearchResponse> = 
+      await axios.get<SearchResponse>(url, {
+        timeout: API_CONFIG.TIMEOUT,
+      });
 
     return response.data;
 
   } catch (error) {
+    
     if (axios.isAxiosError(error)) {
-        if (axios.isAxiosError(error)) {
-            throw new Error(error.response?.data?.message || 'Search request failed');
-        }
-        throw new Error('An unexpected error occurred');
+      throw new Error(error.response?.data?.message || 'Search request failed');
     }
-    throw error;
+
+    throw new Error('An unexpected error occurred');
   }
 }
 
