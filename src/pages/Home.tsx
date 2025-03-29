@@ -1,7 +1,7 @@
 import { useState } from "react";
-import searchAPI from "../services/apiSearch";
+import searchAPI, { SearchResult } from "../services/apiSearch";
+import SearchResults from "../features/SearchResults";
 import LoadingSpinner from "../ui/LoadingSpinner";
-
 function Home() {
 
     const [search, setSearch] = useState<string>("");
@@ -10,6 +10,8 @@ function Home() {
     const [partialMatch, setPartialMatch] = useState<boolean>(true);
     const [limit, setLimit] = useState<number>(25);
     const limitOptions: number[] = [5, 10, 25, 50];
+    const [results, setResults] = useState<SearchResult[]>([]);
+    const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
 
     const handleSearch = async () => {
 
@@ -18,10 +20,13 @@ function Home() {
         // Reset loading and error states
         setIsLoading(true);
         setError(null);
+        setResults([]);
+        setSearchPerformed(false);
 
         try {
-            const results = await searchAPI({ query: search, partialMatch: partialMatch });
-            console.log(results);
+            const results = await searchAPI({ query: search, partialMatch: partialMatch, searchField: "brand_name" });
+            setResults(results.results);
+            setSearchPerformed(true);
         } catch (error) {
             setError(error instanceof Error ? error.message : 'An unexpected error occurred');
         } finally {
@@ -65,9 +70,17 @@ function Home() {
                     </div>
                 </div>
             </div>
-            <div className="search-results">
-                {isLoading && <LoadingSpinner />}
-            </div>
+
+            {isLoading && <LoadingSpinner />}
+
+            {results.length > 0 && (
+                <SearchResults
+                    results={results}
+                    isLoading={isLoading}
+                    error={error}
+                    searchPerformed={searchPerformed}
+                />
+            )}
         </>
     )
 }
