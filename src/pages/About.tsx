@@ -15,7 +15,7 @@ function About() {
             <section className="app-info">
                 <h2>Application Overview</h2>
                 <p>
-                    This application was developed as a test project for B.D. to demonstrate API integration 
+                    This application was developed as a test project for to demonstrate API integration 
                     and search functionality. It utilizes the FDA's public API to provide drug information 
                     and administration routes to healthcare professionals.
                 </p>
