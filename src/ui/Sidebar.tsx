@@ -3,16 +3,21 @@ import { NavLink } from "react-router-dom";
 function SideBar() {
     return (
         <aside className="sidebar">
+            <div className="sidebar-title">
+                <span className="sidebar-icon">⚕️</span>
+            </div>
             <nav>
                 <ul className="sidebar-ul">
                     <li>
                         <NavLink to="/">Home</NavLink>
                     </li>
-                    <li><NavLink to="/about">About</NavLink></li>
+                    <li>
+                        <NavLink to="/about">About</NavLink>
+                    </li>
                 </ul>
             </nav>
         </aside>
-    )
+    );
 }
 
 export default SideBar;

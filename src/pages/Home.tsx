@@ -4,6 +4,11 @@ import SearchResults from "../features/SearchResults";
 import { DEFAULT_SEARCH_CONFIG, SearchConfig } from "../config/searchConfig";
 import { SearchResult, SearchParams } from "../interfaces/searchInterface";
 
+/**
+ * The main component for the home page
+ * This component is responsible for the search functionality and displaying the results
+ * @returns The home page component
+ */
 function Home() {
 
     const [search, setSearch] = useState<string>("");
