@@ -24,33 +24,36 @@ function SearchResults({ results, isLoading, error, searchPerformed }: SearchRes
     return (
         <div className="results-section">
             {error && <div className="error-message">{error}</div>}
-            {!isLoading && !error && results.length > 0 && (
-                <table className="results-table">
-                    <thead>
-                        <tr>
-                            <th>Brand Name</th>
-                            <th>Generic Name</th>
-                            <th>Product Type</th>
-                            <th>Manufacturer Name</th>
-                            <th>Dosage Form</th>
-                            <th>Administration Route</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {results.map((result) => (
-                            <tr key={result.product_id}>
-                                <td>{result.brand_name}</td>
-                                <td>{result.generic_name}</td>
-                                <td>{result.product_type}</td>
-                                <td className="multi-line">
-                                    {result.openfda?.manufacturer_name?.join('\n') || 'N/A'}
-                                </td>
-                                <td>{result.dosage_form}</td>
-                                <td>{result.route.join(', ')}</td>
+            {searchPerformed && !isLoading && !error && results.length > 0 && (
+                <>
+                    <div className="results-summary">
+                        Found {results.length} result{results.length !== 1 ? 's' : ''}
+                    </div>
+                    <table className="results-table">
+                        <thead>
+                            <tr>
+                                <th>Brand Name</th>
+                                <th>Generic Name</th>
+                                <th>Manufacturer Name</th>
+                                <th>Dosage Form</th>
+                                <th>Administration Route</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {results.map((result) => (
+                                <tr key={result.product_id}>
+                                    <td>{result.brand_name}</td>
+                                    <td>{result.generic_name}</td>
+                                    <td className="multi-line">
+                                        {result.openfda?.manufacturer_name?.join('\n') || 'N/A'}
+                                    </td>
+                                    <td>{result.dosage_form}</td>
+                                    <td>{result.route.join(', ')}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </>
             )}
         </div>
     );

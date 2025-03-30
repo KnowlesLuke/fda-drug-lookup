@@ -20,6 +20,8 @@ function Home() {
     const clearSearch = () => {
         setSearch("");
         setResults([]);
+        setLimit(25);
+        setPartialMatch(false);
         setIsLoading(false);
         setError(null);
         setSearchPerformed(false);
@@ -58,6 +60,13 @@ function Home() {
         }
     }
 
+    // Handle the Enter key being pressed
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     return (
         <>
             <div className="search-container">
@@ -66,6 +75,7 @@ function Home() {
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
+                        onKeyDown={handleKeyDown}
                         placeholder="Search..."
                         className="search-input"
                     />

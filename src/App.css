@@ -325,3 +325,12 @@ main {
   padding: 0 1rem;
   margin-bottom: 0;
 }
+
+/* Results Summary */
+.results-summary {
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+    color: #666;
+    font-size: 1.25rem;
+    border-bottom: 1px solid #dee2e6;
+}

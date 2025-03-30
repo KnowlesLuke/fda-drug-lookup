@@ -8,7 +8,6 @@ export interface SearchResult {
     product_number: string;
     route: string[];
     dosage_form: string;
-    product_type: string;
     openfda: {
         manufacturer_name: string[];
     };
