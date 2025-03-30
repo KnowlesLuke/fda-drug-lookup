@@ -22,17 +22,17 @@ function SearchResults({ results, isLoading, error, searchPerformed }: SearchRes
                         <tr>
                             <th>Brand Name</th>
                             <th>Generic Name</th>
-                            <th>Manufacturer</th>
-                            <th>Product Number</th>
+                            <th>Dosage Form</th>
+                            <th>Administration Route</th>
                         </tr>
                     </thead>
                     <tbody>
                         {results.map((result) => (
-                            <tr key={result.id}>
+                            <tr key={result.product_id}>
                                 <td>{result.brand_name}</td>
                                 <td>{result.generic_name}</td>
-                                <td>{result.manufacturer}</td>
-                                <td>{result.product_number}</td>
+                                <td>{result.dosage_form}</td>
+                                <td>{result.route.join(', ')}</td>
                             </tr>
                         ))}
                     </tbody>

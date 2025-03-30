@@ -16,6 +16,14 @@ function Home() {
     // This could be fetched from an API or defined in a config file
     const limitOptions: number[] = [5, 10, 25, 50];
 
+    const clearSearch = () => {
+        setSearch("");
+        setResults([]);
+        setIsLoading(false);
+        setError(null);
+        setSearchPerformed(false);
+    }
+
     const handleSearch = async () => {
 
         if (!search.trim()) return;
@@ -81,19 +89,18 @@ function Home() {
                         Include partial matches
                     </label>
                     <div className="search-button-container">
+                        <button className="clear-btn" onClick={clearSearch}>Clear</button>
                         <button onClick={handleSearch}>Search</button>
                     </div>
                 </div>
             </div>
 
-            {searchPerformed && results.length > 0 && (
-                <SearchResults
-                    results={results}
-                    isLoading={isLoading}
-                    error={error}
-                    searchPerformed={searchPerformed}
-                />
-            )}
+            <SearchResults
+                results={results}
+                isLoading={isLoading}
+                error={error}
+                searchPerformed={searchPerformed}
+            />
         </>
     )
 }

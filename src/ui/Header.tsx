@@ -1,6 +1,6 @@
 function Header() {
     return (
-        <header className="bg-gray-800 text-white p-4">
+        <header>
             <h2>FDA Drug Lookup</h2>
         </header>
     );
