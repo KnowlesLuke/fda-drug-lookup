@@ -1,7 +1,7 @@
 function Header() {
     return (
         <header>
-            <h2>FDA Drug Lookup</h2>
+            <h2 className="header-title">FDA Drug Lookup</h2>
         </header>
     );
 }

@@ -1,37 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
-import { API_CONFIG } from '../config/api';
+import { API_CONFIG } from '../config/apiConfig';
 import formatTitleCase from '../utils/formatTitleCase';
-
-/**
- * Search result interface
- */
-export interface SearchResult {
-  product_id: string;
-  brand_name: string;
-  generic_name: string;
-  manufacturer: string;
-  product_number: string;
-  route: string[];
-  dosage_form: string;
-}
-
-/**
- * Search response interface
- */
-interface SearchResponse {
-  results: SearchResult[];
-  total: number;
-}
-
-/**
- * Search parameters interface
- */
-export interface SearchParams {
-  query: string;
-  partialMatch: boolean;
-  limit: number;
-  searchField: string;
-}
+import { SearchParams, SearchResult, SearchResponse, GroupByFields } from '../interfaces/searchInterface';
 
 /**
  * Performs a search query against the API
@@ -39,71 +9,109 @@ export interface SearchParams {
  * @returns Promise with search results
  * @throws Error if the request fails
  */
-async function searchAPI(params: SearchParams): Promise<SearchResponse> {
+async function searchAPI(params: SearchParams): Promise<SearchResult[]> {
   try {
 
-    const { query, partialMatch, limit, searchField } = params;
+    const { groupBy } = params;
 
-    // Search for exact matches if partialMatch is false
-    const exactMatch : string = partialMatch ? "" : ".exact";
+    const url : string = buildAPIUrl(params);
 
-    const baseUrl = new URL(API_CONFIG.BASE_URL);
-    const searchQuery : string = `${searchField}${exactMatch}:"${encodeURIComponent(formatTitleCase(query))}"`;
-
-    // Add the additional params
-    baseUrl.searchParams.set('search', searchQuery);
-    baseUrl.searchParams.set('limit', limit.toString());
-    baseUrl.searchParams.set('sort', 'product_ndc:asc');
-    
-    // Build the API URL with the search field and exact match
-    const url : string = baseUrl.toString();
-
-    const response : AxiosResponse<SearchResponse> = await axios.get<SearchResponse>(
-      url, {
+    const response : AxiosResponse<SearchResponse> = await axios.get<SearchResponse>(url, 
+      {
         timeout: API_CONFIG.TIMEOUT,
       });
 
-    // Group the results by brand name and route - this is to remove duplicates
-    const groupedResults = groupDrugsByBrandAndRoute(response.data.results);
-    
-    return {
-      results: groupedResults,
-      total: groupedResults.length
-    };
+    // Return the grouped results if the groupBy param is provided 
+    // Otherwise return the ungrouped results
+    return groupBy.length > 0 
+      ? groupResults(groupBy, response.data.results)
+      : response.data.results;
 
   } catch (error) {
     
     if (axios.isAxiosError(error)) {
-      console.log('Error message:', error?.response?.data.error);
-      throw new Error(error?.response?.data?.error.message || 'An unexpected error occurred');
+      console.log('Error message:', error?.response?.data?.error);
+      throw new Error(error?.response?.data?.error?.message || 'An unexpected error occurred. Please try again.');
     }
 
-    throw new Error('An unexpected error occurred');
+    throw new Error('An unexpected error occurred. Please try again.');
   }
 }
 
 /**
- * Groups drugs by brand name and route
- * @param drugs Array of drugs to group
- * @returns Array of unique drugs grouped by brand name and route
+ * Builds the API URL
+ * @param params Search parameters
+ * @returns string - The API URL
  */
-function groupDrugsByBrandAndRoute(drugs: SearchResult[]): SearchResult[] {
+function buildAPIUrl(params: SearchParams): string {
+
+  const { query, partialMatch, limit, searchField, formatSearchQuery } = params;
+
+  // Search for exact matches if partialMatch is false
+  const exactMatch : string = partialMatch ? "" : ".exact";
+
+  // Format the search query if formatSearchQuery is true
+  const formattedQuery : string = formatSearchQuery ? formatTitleCase(query) : query;
+
+  // Build the base url with the search field, exact match, and query
+  const baseUrl = new URL(API_CONFIG.BASE_URL);
+  const searchQuery : string = `${searchField}${exactMatch}:"${formattedQuery}"`;
+
+  // Add the additional params
+  baseUrl.searchParams.set('search', searchQuery);
+  baseUrl.searchParams.set('limit', limit.toString());
+  baseUrl.searchParams.set('sort', 'product_ndc:asc');
+
+  return baseUrl.toString();
+}
+
+
+/**
+ * Groups drugs by grouped by fields
+ * @param groupBy Array of fields to group by
+ * @param drugs Array of drugs to group
+ * @returns Array of unique drugs grouped by grouped by specified fields
+ */
+function groupResults(groupBy: GroupByFields[], drugs: SearchResult[]): SearchResult[] {
   
-  const uniqueDrugsByBrandAndRoute = new Map<string, SearchResult>();
-    
+  // Create a map to store unique drugs
+  // Using map as it is faster than an array for this use case
+  const uniqueDrugs = new Map<string, SearchResult>();
+
   drugs.forEach(drug => {
-    
-    // Create a unique key for the drug by combining the brand name and route
-    const uniqueKey = `${formatTitleCase(drug.brand_name)}|${drug.route.join('|')}`;
-    
-    // If the drug is not already in the map, add it
-    if (!uniqueDrugsByBrandAndRoute.has(uniqueKey)) {
-      uniqueDrugsByBrandAndRoute.set(uniqueKey, drug);
+    const uniqueKey = groupBy
+      .map(field => {
+        const value = getFieldValue(drug, field);
+        return Array.isArray(value) ? value.join('|') : value;
+      })
+      .join('|');
+
+    if (!uniqueDrugs.has(uniqueKey)) {
+      uniqueDrugs.set(uniqueKey, drug);
     }
   });
 
-  // Return the unique drugs
-  return Array.from(uniqueDrugsByBrandAndRoute.values());
+  // Return the unique drugs as an array
+  return [...uniqueDrugs.values()];
+}
+
+
+/**
+ * Gets the value of a field from a drug
+ * @param drug The drug to get the value from
+ * @param field The field to get the value from
+ * @returns The value of the field
+ */
+function getFieldValue(drug: SearchResult, field: GroupByFields): string | string[] {
+
+  // If the field is a nested field, get the value from the nested field
+  if (field.includes('.')) {
+    const [parent, child] = field.split('.');
+    return (drug as any)[parent]?.[child] || [];
+  }
+
+  // Otherwise, return the value of the field
+  return (drug as any)[field];
 }
 
 export default searchAPI;

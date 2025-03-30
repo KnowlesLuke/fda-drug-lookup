@@ -1,4 +1,3 @@
-import { HiOutlineHome } from "react-icons/hi2";
 import { NavLink } from "react-router-dom";
 
 function SideBar() {
@@ -7,11 +6,9 @@ function SideBar() {
             <nav>
                 <ul className="sidebar-ul">
                     <li>
-                        <NavLink to="/" className="text-gray-300 hover:text-white">Home</NavLink>
-                        <HiOutlineHome />
+                        <NavLink to="/">Home</NavLink>
                     </li>
-                    <li><NavLink to="/about" className="text-gray-300 hover:text-white">About</NavLink></li>
-                    <li><NavLink to="/saved" className="text-gray-300 hover:text-white">Saved</NavLink></li>
+                    <li><NavLink to="/about">About</NavLink></li>
                 </ul>
             </nav>
         </aside>

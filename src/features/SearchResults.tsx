@@ -1,4 +1,4 @@
-import { SearchResult } from "../services/apiSearch";
+import { SearchResult } from "../interfaces/searchInterface";
 
 interface SearchResultsProps {
     results: SearchResult[];
@@ -9,19 +9,29 @@ interface SearchResultsProps {
 
 function SearchResults({ results, isLoading, error, searchPerformed }: SearchResultsProps) {
 
+    // Check if the search is still loading
+    // If so, display a loading message
+    if (isLoading) return <div className="loading">Loading...</div>;
+
+    // Check if the results are empty and the search has been performed
+    // If so, display a message indicating no results were found
+    if (!isLoading && results.length === 0 && searchPerformed) {
+        return (
+            <div className="error-message">Your search returned no results. Please try again.</div>
+        );
+    }
+
     return (
         <div className="results-section">
             {error && <div className="error-message">{error}</div>}
-            {isLoading && <div className="loading">Loading...</div>}
-            {!isLoading && !error && results.length === 0 && searchPerformed && (
-                <div className="no-results">No results found</div>
-            )}
             {!isLoading && !error && results.length > 0 && (
                 <table className="results-table">
                     <thead>
                         <tr>
                             <th>Brand Name</th>
                             <th>Generic Name</th>
+                            <th>Product Type</th>
+                            <th>Manufacturer Name</th>
                             <th>Dosage Form</th>
                             <th>Administration Route</th>
                         </tr>
@@ -31,6 +41,10 @@ function SearchResults({ results, isLoading, error, searchPerformed }: SearchRes
                             <tr key={result.product_id}>
                                 <td>{result.brand_name}</td>
                                 <td>{result.generic_name}</td>
+                                <td>{result.product_type}</td>
+                                <td className="multi-line">
+                                    {result.openfda?.manufacturer_name?.join('\n') || 'N/A'}
+                                </td>
                                 <td>{result.dosage_form}</td>
                                 <td>{result.route.join(', ')}</td>
                             </tr>

@@ -1,19 +1,20 @@
 import { useState } from "react";
-import searchAPI, { SearchResult, SearchParams } from "../services/apiSearch";
+import searchAPI from "../services/apiSearch";
 import SearchResults from "../features/SearchResults";
+import { DEFAULT_SEARCH_CONFIG, SearchConfig } from "../config/searchConfig";
+import { SearchResult, SearchParams } from "../interfaces/searchInterface";
 
 function Home() {
 
     const [search, setSearch] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [partialMatch, setPartialMatch] = useState<boolean>(true);
+    const [partialMatch, setPartialMatch] = useState<boolean>(false);
     const [limit, setLimit] = useState<number>(25);
     const [results, setResults] = useState<SearchResult[]>([]);
     const [searchPerformed, setSearchPerformed] = useState<boolean>(false);
 
     // Options for the number of results to display
-    // This could be fetched from an API or defined in a config file
     const limitOptions: number[] = [5, 10, 25, 50];
 
     const clearSearch = () => {
@@ -28,28 +29,28 @@ function Home() {
 
         if (!search.trim()) return;
 
-        // Reset loading and error states
+        // Set the loading and error states
         setIsLoading(true);
+        setSearchPerformed(true);
         setError(null);
         setResults([]);
-        setSearchPerformed(false);
+
+        // Get the default search config - This is set up for this specific use case
+        const searchConfig : SearchConfig = DEFAULT_SEARCH_CONFIG;
 
         // Create the search parameters
         const searchParams : SearchParams = {
             query: search,
             partialMatch,
-            searchField: "brand_name",
+            searchField: searchConfig.search_item,
+            formatSearchQuery: searchConfig.formatSearchQuery,
+            groupBy: searchConfig.groupBy,
             limit
         }
 
         try {
-
-            // Search for the results - Pass in the search parameters
             const results = await searchAPI(searchParams);
-
-            
-            setResults(results.results);
-            setSearchPerformed(true);
+            setResults(results);
         } catch (error) {
             setError(error instanceof Error ? error.message : 'An unexpected error occurred');
         } finally {
@@ -60,7 +61,6 @@ function Home() {
     return (
         <>
             <div className="search-container">
-                <h1>Search</h1>
                 <div className="search-controls">
                     <input
                         type="text"
@@ -90,7 +90,7 @@ function Home() {
                     </label>
                     <div className="search-button-container">
                         <button className="clear-btn" onClick={clearSearch}>Clear</button>
-                        <button onClick={handleSearch}>Search</button>
+                        <button className="search-btn" onClick={handleSearch}>Search</button>
                     </div>
                 </div>
             </div>

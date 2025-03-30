@@ -5,9 +5,10 @@
  */
 function formatTitleCase(str: string): string {
   return str
-    .split(/(?=[A-Z])|(?=[0-9])/g) // Split before uppercase letters or digits
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
-    .join(" "); // Join with spaces
+    .toLowerCase()
+    .split(/([-\s])/g) // Split by spaces or hyphens, keeping delimiters
+    .map(word => word.match(/[-\s]/) ? word : word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize only words
+    .join(""); // Join everything back
 }
 
 export default formatTitleCase;
